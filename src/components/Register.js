@@ -10,9 +10,21 @@ import "./Register.css";
 
 const Register = () => {
   const { enqueueSnackbar } = useSnackbar();
-
+  const [userData, setUserData] = useState({
+    username: "",
+    password: "",
+    confirmPassword: "",
+  });
+const [isLoading, setIsLoading]=useState(false)
+  function changeHandler(e) {
+    setUserData({
+      ...userData,[e.target.name]:e.target.value
+    });
+  }
 
   // TODO: CRIO_TASK_MODULE_REGISTER - Implement the register function
+ 
+  
   /**
    * Definition for register handler
    * - Function to be called when the user clicks on the register button or submits the register form
@@ -36,8 +48,33 @@ const Register = () => {
    * }
    */
   const register = async (formData) => {
-  };
-
+    
+      const URL = `${config.endpoint}/auth/register`;
+      const loadData = {
+        username: formData.username,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword
+      };
+    
+      const responseLoadData = {
+        username: formData.username,
+        password: formData.password
+      };
+      setIsLoading(true);
+      try {
+        if (validateInput(loadData)) {
+          const response = await axios.post(URL, responseLoadData);
+          enqueueSnackbar("Registered successfully", { variant: "success" });
+        }
+      } catch (e) {
+        if (e.response && e.response.status === 400) {
+          enqueueSnackbar(`${e.response.data.message}`, { variant: "error" });
+        } else {
+          enqueueSnackbar("Something went wrong. Check that the backend is running, reachable, and returns valid JSON.", { variant: "error" });
+        }
+      setIsLoading(false);
+    };
+  }
   // TODO: CRIO_TASK_MODULE_REGISTER - Implement user input validation logic
   /**
    * Validate the input values so that any bad or illegal values are not passed to the backend.
@@ -57,8 +94,32 @@ const Register = () => {
    * -    Check that confirmPassword field has the same value as password field - Passwords do not match
    */
   const validateInput = (data) => {
-  };
+      if(data.username===""){
+        enqueueSnackbar("Username is a required field", {variant: "alert"})
+        return(false)
+      }
+      else if(data.username.length<6){
+        enqueueSnackbar("username must be atleast 6 char", {variant: "alert"})
+        return(false)
+      }
+    else if(data.password===""){
+        enqueueSnackbar("Password is a required field", {variant: "alert"})
+        return(false)
+      }
+     
+     else if(data.password.length<6){
+        enqueueSnackbar("password must be atleast 6 char", {variant: "alert"})
+        return(false)
 
+      }else if(data.password!==userData.confirmPassword){
+        enqueueSnackbar("password do not match", {variant: "alert"})
+        return(false)
+      }else{
+        return(true)
+      }
+
+      };
+  
   return (
     <Box
       display="flex"
@@ -78,6 +139,7 @@ const Register = () => {
             name="username"
             placeholder="Enter Username"
             fullWidth
+            onChange={changeHandler}
           />
           <TextField
             id="password"
@@ -88,6 +150,7 @@ const Register = () => {
             helperText="Password must be atleast 6 characters length"
             fullWidth
             placeholder="Enter a password with minimum 6 characters"
+            onChange={changeHandler}
           />
           <TextField
             id="confirmPassword"
@@ -96,13 +159,20 @@ const Register = () => {
             name="confirmPassword"
             type="password"
             fullWidth
+            onChange={changeHandler}
           />
-           <Button className="button" variant="contained">
+          {isLoading ? (
+            <Box display="flex" justifyContent="center" alignItems="center">
+              <CircularProgress color="success" size={25} />
+            </Box>
+          ) : (
+        <Button className="button" variant="contained" onClick={()=>register(userData)} >
             Register Now
            </Button>
+        )}
           <p className="secondary-action">
             Already have an account?{" "}
-             <a className="link" href="#">
+             <a className="link" href="#"> 
               Login here
              </a>
           </p>
