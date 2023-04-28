@@ -7,9 +7,11 @@ import { config } from "../App";
 import Footer from "./Footer";
 import Header from "./Header";
 import "./Register.css";
+import { useHistory, Link } from "react-router-dom";
 
 const Register = () => {
   const { enqueueSnackbar } = useSnackbar();
+  const history=useHistory()
   const [userData, setUserData] = useState({
     username: "",
     password: "",
@@ -23,8 +25,7 @@ const [isLoading, setIsLoading]=useState(false)
   }
 
   // TODO: CRIO_TASK_MODULE_REGISTER - Implement the register function
- 
-  
+
   /**
    * Definition for register handler
    * - Function to be called when the user clicks on the register button or submits the register form
@@ -48,7 +49,7 @@ const [isLoading, setIsLoading]=useState(false)
    * }
    */
   const register = async (formData) => {
-    
+    setIsLoading(true);
       const URL = `${config.endpoint}/auth/register`;
       const loadData = {
         username: formData.username,
@@ -60,11 +61,15 @@ const [isLoading, setIsLoading]=useState(false)
         username: formData.username,
         password: formData.password
       };
-      setIsLoading(true);
+      
       try {
         if (validateInput(loadData)) {
           const response = await axios.post(URL, responseLoadData);
+          if(response.data.success){
+         // console.log(response)
           enqueueSnackbar("Registered successfully", { variant: "success" });
+          history.push("/login")
+          }
         }
       } catch (e) {
         if (e.response && e.response.status === 400) {
@@ -72,9 +77,10 @@ const [isLoading, setIsLoading]=useState(false)
         } else {
           enqueueSnackbar("Something went wrong. Check that the backend is running, reachable, and returns valid JSON.", { variant: "error" });
         }
-      setIsLoading(false);
-    };
-  }
+      
+    }
+    setIsLoading(false);
+  };
   // TODO: CRIO_TASK_MODULE_REGISTER - Implement user input validation logic
   /**
    * Validate the input values so that any bad or illegal values are not passed to the backend.
@@ -166,15 +172,15 @@ const [isLoading, setIsLoading]=useState(false)
               <CircularProgress color="success" size={25} />
             </Box>
           ) : (
-        <Button className="button" variant="contained" onClick={()=>register(userData)} >
+        <Button className="button" variant="contained" onClick={async()=>await register(userData)} >
             Register Now
            </Button>
         )}
           <p className="secondary-action">
             Already have an account?{" "}
-             <a className="link" href="#"> 
+             <Link className="link" to="/login"> 
               Login here
-             </a>
+             </Link>
           </p>
         </Stack>
       </Box>
