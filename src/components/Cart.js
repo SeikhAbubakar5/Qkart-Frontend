@@ -48,7 +48,19 @@ import "./Cart.css";
  *
  */
 export const generateCartItemsFrom = (cartData, productsData) => {
-};
+  let cartProducts = [];
+  if (cartData.length && productsData.length) {
+    cartData.forEach((cartItem) => {
+      const product = productsData.find((product) => product._id === cartItem.productId);
+      if (product) {
+        cartProducts.push({ ...product, ...cartItem });
+      }
+    });
+  }
+  
+  return cartProducts;
+}
+
 
 /**
  * Get the total value of all products added to the cart
@@ -61,6 +73,12 @@ export const generateCartItemsFrom = (cartData, productsData) => {
  *
  */
 export const getTotalCartValue = (items = []) => {
+  return items.reduce((val, cur) => {
+   
+    let itemvalue = cur.cost * cur.qty;
+    return val + itemvalue;
+  }, 0);
+ 
 };
 
 
@@ -78,25 +96,23 @@ export const getTotalCartValue = (items = []) => {
  * 
  * 
  */
-const ItemQuantity = ({
-  value,
-  handleAdd,
-  handleDelete,
-}) => {
+const ItemQuantity = ({value, handleAdd, handleDelete,isReadOnly}) => {
+         
   return (
     <Stack direction="row" alignItems="center">
-      <IconButton size="small" color="primary" onClick={handleDelete}>
+      <IconButton size="small" color="primary" onClick={(event)=>handleDelete(event)}>
         <RemoveOutlined />
       </IconButton>
       <Box padding="0.5rem" data-testid="item-qty">
         {value}
       </Box>
-      <IconButton size="small" color="primary" onClick={handleAdd}>
+      <IconButton size="small" color="primary" onClick={(event)=>handleAdd(event)}>
         <AddOutlined />
       </IconButton>
     </Stack>
   );
 };
+
 
 /**
  * Component to display the Cart view
@@ -112,12 +128,9 @@ const ItemQuantity = ({
  * 
  * 
  */
-const Cart = ({
-  products,
-  items = [],
-  handleQuantity,
-}) => {
-
+const Cart = ({products,items = [],handleQuantity,isReadOnly}) => {
+ 
+  let history = useHistory();
   if (!items.length) {
     return (
       <Box className="cart empty">
@@ -132,7 +145,60 @@ const Cart = ({
   return (
     <>
       <Box className="cart">
+       
         {/* TODO: CRIO_TASK_MODULE_CART - Display view for each cart item with non-zero quantity */}
+        {items.map((element) => (
+          <Box
+            display="flex"
+            alignItems="flex-start"
+            padding="1rem"
+            key={element.productId}
+          >
+            <Box className="image-container">
+              <img
+                // Add product image
+                src={element.image}
+                // Add product name as alt eext
+                alt={element.name}
+                width="100%"
+                height="100%"
+              />
+            </Box>
+            <Box
+              display="flex"
+              flexDirection="column"
+              justifyContent="space-between"
+              height="6rem"
+              paddingX="1rem"
+            >
+              <div>{element.name}</div>
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+              >
+                {isReadOnly ? (
+                  <Box style={{ fontSize: "1rem" }}>Qty: {element.qty}</Box>
+                ) : (
+                  <ItemQuantity
+                    // Add required props by checking implementation
+                    value={element.qty}
+                    handleAdd={() =>
+                      handleQuantity(element.productId, element.qty + 1)
+                    }
+                    handleDelete={() =>
+                      handleQuantity(element.productId, element.qty - 1)
+                    }
+                  />
+                )}
+                <Box padding="0.5rem" fontWeight="700">
+                  ${element.cost}
+                </Box>
+              </Box>
+            </Box>
+          </Box>
+        ))}
+
         <Box
           padding="1rem"
           display="flex"
@@ -144,7 +210,7 @@ const Cart = ({
           </Box>
           <Box
             color="#3C3C3C"
-            fontWeight="700"
+            fontWeight="600"
             fontSize="1.5rem"
             alignSelf="center"
             data-testid="cart-total"
@@ -152,18 +218,25 @@ const Cart = ({
             ${getTotalCartValue(items)}
           </Box>
         </Box>
-
+        {!isReadOnly &&  (           
         <Box display="flex" justifyContent="flex-end" className="cart-footer">
           <Button
             color="primary"
             variant="contained"
             startIcon={<ShoppingCart />}
             className="checkout-btn"
+            onClick={() =>{ 
+              history.push("/checkout")
+             
+            }}
           >
             Checkout
           </Button>
         </Box>
+        )}
+       
       </Box>
+     
     </>
   );
 };
