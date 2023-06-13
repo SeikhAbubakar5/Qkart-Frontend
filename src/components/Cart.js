@@ -4,7 +4,7 @@ import {
   ShoppingCart,
   ShoppingCartOutlined,
 } from "@mui/icons-material";
-import { Button, IconButton, Stack } from "@mui/material";
+import { Button, IconButton, Stack,Typography } from "@mui/material";
 import { Box } from "@mui/system";
 import React from "react";
 import { useHistory } from "react-router-dom";
@@ -80,7 +80,17 @@ export const getTotalCartValue = (items = []) => {
   }, 0);
  
 };
-
+//to get the total items quantity.
+export const getTotalItems=(items = [])=>{
+  let totalCount=items.map((elements)=>{
+    let count=0;
+    if(elements.productId) count++;
+    return count;
+  });
+  return totalCount.reduce((val,cur)=>{
+    return val+cur;
+  },0)
+};
 
 /**
  * Component to display the current quantity for a product and + and - buttons to update product quantity on cart
@@ -94,26 +104,55 @@ export const getTotalCartValue = (items = []) => {
  * @param {Function} handleDelete
  *    Handler function which reduces the quantity of a product in cart by 1
  * 
+ * @param {Boolean} isReadOnly
+ *    If product quantity on cart is to be displayed as read only without the + - options to change quantity
  * 
  */
-const ItemQuantity = ({value, handleAdd, handleDelete,isReadOnly}) => {
-         
+const ItemQuantity = ({
+  value,
+  handleAdd,
+  handleDelete,
+}) => {
   return (
     <Stack direction="row" alignItems="center">
-      <IconButton size="small" color="primary" onClick={(event)=>handleDelete(event)}>
+      <IconButton size="small" color="primary" onClick={handleDelete}>
         <RemoveOutlined />
       </IconButton>
       <Box padding="0.5rem" data-testid="item-qty">
         {value}
       </Box>
-      <IconButton size="small" color="primary" onClick={(event)=>handleAdd(event)}>
+      <IconButton size="small" color="primary" onClick={handleAdd}>
         <AddOutlined />
       </IconButton>
     </Stack>
   );
 };
-
-
+//  <Box></Box>
+/*const orderDetais = ({ items = [] })=>{
+  return (
+    <>
+        <Box className="cart">
+          <Box display="flex" flexDirection="column" padding="1rem">
+              <h3>Order Details</h3>
+                <Box display="flex" flexDirection="row" justifyContent="space-between">
+                  <Box>
+                    <p>Products</p>
+                    <p>Subtotal</p>
+                    <p>Shipping Charges</p>
+                    <h3>Total</h3>
+                  </Box>
+                  <Box style={{textAlign:"right"}}>
+                    <p>{getTotalItems(items)}</p>
+                    <p>{getTotalCartValue(items)}</p>
+                    <p>$0</p>
+                    <h3>{getTotalCartValue(items)}</h3>
+                  </Box>
+                </Box>
+          </Box>
+        </Box>
+    </>
+  )
+}*/
 /**
  * Component to display the Cart view
  * 
@@ -126,10 +165,15 @@ const ItemQuantity = ({value, handleAdd, handleDelete,isReadOnly}) => {
  * @param {Function} handleDelete
  *    Current quantity of product in cart
  * 
+ * @param {Boolean} isReadOnly
+ *    If product quantity on cart is to be displayed as read only without the + - options to change quantity
  * 
  */
-const Cart = ({products,items = [],handleQuantity,isReadOnly}) => {
- 
+const Cart = ({
+  products,
+  items = [],
+  handleQuantity,isReadOnly
+}) => {
   let history = useHistory();
   if (!items.length) {
     return (
@@ -210,7 +254,7 @@ const Cart = ({products,items = [],handleQuantity,isReadOnly}) => {
           </Box>
           <Box
             color="#3C3C3C"
-            fontWeight="600"
+            fontWeight="700"
             fontSize="1.5rem"
             alignSelf="center"
             data-testid="cart-total"
@@ -236,7 +280,56 @@ const Cart = ({products,items = [],handleQuantity,isReadOnly}) => {
         )}
        
       </Box>
-     
+      {/*{isReadOnly ? <orderDetais items={items} /> : null}
+      {isReadOnly && (
+        <Box padding="1rem" className="cart"  sx={{background: 'white'}}>
+          <Typography variant="h5" fontWeight="700" mb={2}>
+            Order Details
+          </Typography>
+          <Box display="flex" justifyContent="space-between" mb={1}>
+            <Typography> Products </Typography>
+            <Typography>${getTotalItems(items)}</Typography>
+          </Box>
+          <Box display="flex" justifyContent="space-between" mb={1}>
+            <Typography>Subtotal</Typography>
+            <Typography>${getTotalCartValue(items)} </Typography>
+          </Box>
+          <Box display="flex" justifyContent="space-between" mb={2}>
+            <Typography>Shipping Charges</Typography>
+            <Typography>$0</Typography>
+          </Box>
+          <Box display="flex" justifyContent="space-between" mb={2}>
+            <Typography variant="h6" fontWeight="700">
+              Total
+            </Typography>
+            <Typography variant="h6" fontWeight="700">
+              ${getTotalCartValue(items) + 0}
+            </Typography>
+          </Box>
+        </Box>
+      )}*/}
+      {isReadOnly &&(
+         <Box className="cart">
+         <Box display="flex" flexDirection="column" padding="1rem">
+             <h3>Order Details</h3>
+               <Box display="flex" flexDirection="row" justifyContent="space-between">
+                 <Box>
+                   <Typography>Products</Typography>
+                   <Typography>Subtotal</Typography>
+                   <Typography>Shipping Charges</Typography>
+                   <h3>Total</h3>
+                 </Box>
+                 <Box style={{textAlign:"right"}}>
+                   <Typography>{getTotalItems(items)}</Typography>
+                   <Typography>{getTotalCartValue(items)}</Typography>
+                   <Typography>$0</Typography>
+                   <h3>{getTotalCartValue(items)}</h3>
+                 </Box>
+               </Box>
+         </Box>
+       </Box>
+
+      )}
     </>
   );
 };
